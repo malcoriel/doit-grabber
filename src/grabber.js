@@ -30,9 +30,10 @@ function main() {
 			return lib.auth(promptResult);
 		})
 		.then(() => {
-			return lib.getTaskList();
+			return lib.getAllTasks();
 		})
-		.tap(console.log);
+		.tap(console.log)
+		.then(() => console.log('done'));
 }
 main();
 
