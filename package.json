@@ -1,0 +1,34 @@
+{
+  "scripts": {
+    "run": "./node_modules/.bin/babel-node src/grabber.js"
+  },
+  "name": "doit-grabber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/grabber.js",
+  "dependencies": {
+    "babel-cli": "^6.16.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "lodash": "^4.16.4",
+    "moment": "^2.15.1",
+    "prompt": "^1.0.0",
+    "q": "^1.4.1",
+    "superagent": "^2.3.0",
+    "superagent-promise": "^1.1.0",
+    "yargs": "^6.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malcoriel/doit-grabber.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/malcoriel/doit-grabber/issues"
+  },
+  "homepage": "https://github.com/malcoriel/doit-grabber#readme"
+}
