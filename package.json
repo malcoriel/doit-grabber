@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "run": "./node_modules/.bin/babel-node src/grabber.js"
+    "start": "./node_modules/.bin/babel-node src/grabber.js"
   },
   "name": "doit-grabber",
   "version": "1.0.0",

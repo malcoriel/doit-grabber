@@ -1,7 +1,6 @@
 import DoItLib from './lib/lib';
 const lib = new DoItLib();
 import prompt from 'prompt';
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 prompt.message = '';
 prompt.delimiter = '';
 import Q from 'q';
