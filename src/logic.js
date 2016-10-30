@@ -40,9 +40,10 @@ export default class GrabberLogic {
 
 	static printPlannedStats(lib, argv, tasks) {
 		return Q()
-			// .then(() => _.reject(tasks, 'completed'))
-			// .then((tasks) => _.filter(tasks, t => t.myType === 'planned'))
-			// .tap(incompletePlanned => console.log(incompletePlanned.length));
+			.then(() => _.reject(tasks, 'completed'))
+			.then((tasks) => _.filter(tasks, t => t.myType === 'planned'))
+			// .tap((tasks) => _.each(tasks, t => console.log(t.title)))
+			.tap(planned => console.log(planned.length));
 	}
 
 	static printCompletedByProjectStats(lib, argv, tasks) {

@@ -52,10 +52,17 @@ export default class DoItLib {
 		return this.getTaskList(box).catch(() => []);
 	}
 
-	getAllTasks() {
+	getAllTasks(dropTrash = true) {
 		return Q()
 			.then(() => this.getBoxes())
 			.then((boxes) => Q.all(_.map(boxes, box => this.tryGetTaskList(box))))
 			.then(boxesTasks => _.flatten(boxesTasks))
+			.then(boxesTasks => _.filter(boxesTasks, t => {
+				if(!dropTrash)
+					return true;
+				if(t.trashed || t.deleted)
+					return false;
+				return true;
+			}))
 	}
 }
