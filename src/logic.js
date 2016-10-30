@@ -47,18 +47,17 @@ export default class GrabberLogic {
 
 	static printCompletedByProjectStats(lib, argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart();
-		let lastWeekEnd = GrabberLogic.getLastWeekEnd();
 
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
-			.then((tasks) => _.filter(tasks, t => t.completedMoment.isBetween(lastWeekStart, lastWeekEnd)))
+			.then((tasks) => _.filter(tasks, t => t.completedMoment.isBetween(lastWeekStart, moment.utc())))
 			.then((tasks) => _.groupBy(tasks, 'project'))
 			.tap((groupedTasks) => {
 				let sortedProjects = _(groupedTasks).keys().sort(naturalSort).value();
 				_.each(sortedProjects, projectName => {
 					console.log(`${projectName ? projectName : 'Unknown'}: ${groupedTasks[projectName].length}`);
 				})
-			})
+			});
 	}
 
 	static getLastWeekStart(){
@@ -111,6 +110,7 @@ export default class GrabberLogic {
 				console.log(`Overdo scheduled ${overdoScheduled.length}`);
 				console.log(`Overdo planned ${overdoPlanned.length}`);
 				console.log(`Overdo unplanned ${overdoUnplanned.length}`);
+				console.log('Incomplete - see next');
 				console.log('For copying:');
 				console.log(scheduledDone.length);
 				console.log(plannedDone.length);
