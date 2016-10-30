@@ -11,7 +11,7 @@ export default class DoItLib {
 				.set('Content-Type', 'application/x-www-form-urlencoded')
 				.end())
 			.catch(err => {
-				if(err.status == 302) { // actually success, we just don't follow their redirects
+				if (err.status == 302) { // actually success, we just don't follow their redirects
 					this.cookies = err.response.headers['set-cookie'];
 					console.log('Auth success');
 					return;
@@ -23,6 +23,11 @@ export default class DoItLib {
 
 	getResources() {
 		return this.plainGet('https://i.doit.im/api/resources_init').then(res => res.resources);
+	}
+
+	getProjects() {
+		return this.getResources()
+			.then((resources) => _(resources.projects).map(p => [p.uuid, p.name]).fromPairs().value());
 	}
 
 	getBoxes() {

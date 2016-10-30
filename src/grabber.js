@@ -5,7 +5,7 @@ prompt.message = '';
 prompt.delimiter = '';
 import Q from 'q';
 import {argv} from 'yargs';
-import fs from 'fs';
+import GrabberLogic from './logic';
 function main() {
 	return Q()
 		.then(() => {
@@ -30,19 +30,13 @@ function main() {
 				});
 		})
 		.then(function tryAuthenticate(promptResult) {
-			return lib.auth(promptResult);
+			return lib.auth(promptResult)
+				.then(() => lib);
 		})
-		.then(() => {
-			return lib.getAllTasks();
-		})
-		.then((tasks) => {
-			if(argv.output)
-			{
-				return Q.fcall(fs.writeFile, argv.output, JSON.stringify(tasks, null, 4));
-			}
-			console.log(tasks);
-		})
-		.then(() => console.log('done'));
+		.then((lib) => GrabberLogic.chooseTaskAndGo(lib, argv))
+		.then(() => console.log('done'))
+		.catch(console.error)
+		.done();
 }
 main();
 
