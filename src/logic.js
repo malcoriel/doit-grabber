@@ -5,7 +5,6 @@ import naturalSort from 'javascript-natural-sort';
 
 export default class GrabberLogic {
 	static doBackup(lib, argv) {
-		console.log('Mode is backup, going to grab all your tasks and print them');
 		return Q()
 			.then(() => {
 				return lib.getAllTasks();
