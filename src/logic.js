@@ -20,8 +20,13 @@ export default class GrabberLogic {
 	static getStats(lib, argv) {
 		return Q()
 			.then(() => lib.getAllTasks())
-			.tap(() => console.log('-----------DONE---------------'))
 			.then((tasks) => GrabberLogic.beautifyTasks(lib, argv, tasks))
+			.tap((tasks) => {
+				const crunchTasks = _.filter(tasks, t => t.project === 'Crunch');
+				return console.log(`Will omit ${crunchTasks.length} Crunch tasks`);
+			})
+			.then((tasks) => _.reject(tasks, t => t.project === 'Crunch'))
+			.tap(() => console.log('-----------DONE---------------'))
 			.tap((tasks) => GrabberLogic.printCompletedStats(lib, argv, tasks))
 			.tap((tasks) => GrabberLogic.printIncompleteStats(lib, argv, tasks))
 			.tap(() => console.log('------DONE BY PROJECT---------'))
@@ -47,10 +52,13 @@ export default class GrabberLogic {
 
 	static printCompletedByProjectStats(lib, argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart();
+		let lastWeekEnd = GrabberLogic.getLastWeekEnd();
+
+		console.log(`Seaching completed by project between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`);
 
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
-			.then((tasks) => _.filter(tasks, t => t.completedMoment.isBetween(lastWeekStart, moment.utc())))
+			.then((tasks) => _.filter(tasks, t => t.completedMoment.clone().isBetween(lastWeekStart, lastWeekEnd)))
 			.then((tasks) => _.groupBy(tasks, 'project'))
 			.tap((groupedTasks) => {
 				let sortedProjects = _(groupedTasks).keys().sort(naturalSort).value();
@@ -61,16 +69,18 @@ export default class GrabberLogic {
 	}
 
 	static getLastWeekStart(){
-		return moment.utc().startOf('week').subtract(1, 'day').startOf('week').subtract(1, 'day');
+		return moment.utc().startOf('week').subtract(1, 'day').utcOffset(5);
 	}
 
 	static getLastWeekEnd(){
-		return GrabberLogic.getLastWeekStart().add(1, 'week');
+		return GrabberLogic.getLastWeekStart().clone().add(1, 'week').utcOffset(5);
 	}
 
 	static printCompletedStats(lib, argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart();
 		let lastWeekEnd = GrabberLogic.getLastWeekEnd();
+
+		console.log(`Seaching completed between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`)
 
 		function formatTask(t) {
 			return {
@@ -79,8 +89,8 @@ export default class GrabberLogic {
 			}
 		}
 
-		let thisWeek = [];
 		let lastWeek = [];
+		let thisWeek = [];
 		let scheduledDone = [];
 		let plannedDone = [];
 		let unplannedDone = [];
@@ -89,15 +99,15 @@ export default class GrabberLogic {
 		let overdoUnplanned = [];
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
-			.then((tasks) => _.filter(tasks, t => t.completedMoment.isAfter(lastWeekStart)))
-			.tap((tasks) => thisWeek = _.filter(tasks, t => t.completedMoment.isBetween(lastWeekStart, lastWeekEnd)))
-			.tap((tasks) => lastWeek = _.filter(tasks, t => t.completedMoment.isAfter(lastWeekEnd)))
-			.tap((tasks) => scheduledDone = _.filter(thisWeek, t => t.myType === 'scheduled'))
-			.tap((tasks) => plannedDone = _.filter(thisWeek, t => t.myType === 'planned'))
-			.tap((tasks) => unplannedDone = _.filter(thisWeek, t => t.myType === 'unplanned'))
-			.tap((tasks) => overdoScheduled = _.filter(lastWeek, t => t.myType === 'scheduled'))
-			.tap((tasks) => overdoPlanned = _.filter(lastWeek, t => t.myType === 'planned'))
-			.tap((tasks) => overdoUnplanned = _.filter(lastWeek, t => t.myType === 'unplanned'))
+			.then((tasks) => _.filter(tasks, t => t.completedMoment.clone().isAfter(lastWeekStart)))
+			.tap((tasks) => lastWeek = _.filter(tasks, t => t.completedMoment.clone().isBetween(lastWeekStart, lastWeekEnd)))
+			.tap((tasks) => thisWeek = _.filter(tasks, t => t.completedMoment.clone().isAfter(lastWeekEnd)))
+			.tap((tasks) => scheduledDone = _.filter(lastWeek, t => t.myType === 'scheduled'))
+			.tap((tasks) => plannedDone = _.filter(lastWeek, t => t.myType === 'planned'))
+			.tap((tasks) => unplannedDone = _.filter(lastWeek, t => t.myType === 'unplanned'))
+			.tap((tasks) => overdoScheduled = _.filter(thisWeek, t => t.myType === 'scheduled'))
+			.tap((tasks) => overdoPlanned = _.filter(thisWeek, t => t.myType === 'planned'))
+			.tap((tasks) => overdoUnplanned = _.filter(thisWeek, t => t.myType === 'unplanned'))
 			// for debug only
 			.then((tasks) => _.map(tasks, formatTask))
 			.tap(argv.debugPrint ? console.log : () => {
