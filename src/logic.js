@@ -31,8 +31,6 @@ export default class GrabberLogic {
 			.tap((tasks) => GrabberLogic.printIncompleteStats(lib, argv, tasks))
 			.tap(() => console.log('------DONE BY PROJECT---------'))
 			.tap((tasks) => GrabberLogic.printCompletedByProjectStats(lib, argv, tasks))
-			.tap(() => console.log('-----------PLANNED------------'))
-			.tap((tasks) => GrabberLogic.printPlannedStats(lib, argv, tasks))
 	}
 
 	static printIncompleteStats(lib, argv, tasks) {
@@ -40,14 +38,6 @@ export default class GrabberLogic {
 			.then(() => _.reject(tasks, 'completed'))
 			.then((tasks) => _.filter(tasks, t => t.myType === 'planned'))
 			.tap(incompletePlanned => console.log(incompletePlanned.length));
-	}
-
-	static printPlannedStats(lib, argv, tasks) {
-		return Q()
-			.then(() => _.reject(tasks, 'completed'))
-			.then((tasks) => _.filter(tasks, t => t.myType === 'planned'))
-			// .tap((tasks) => _.each(tasks, t => console.log(t.title)))
-			.tap(planned => console.log(planned.length));
 	}
 
 	static printCompletedByProjectStats(lib, argv, tasks) {
@@ -69,7 +59,10 @@ export default class GrabberLogic {
 	}
 
 	static getLastWeekStart(){
-		return moment.utc().startOf('week').subtract(1, 'day').utcOffset(5);
+		const proposedStart = moment.utc().startOf('week').subtract(1, 'day').utcOffset(5);
+		if(proposedStart.diff(moment.utc(), 'days') <= 3) // most likely late statistics gathering
+			proposedStart.subtract(1, 'week');
+		return proposedStart;
 	}
 
 	static getLastWeekEnd(){
@@ -90,24 +83,16 @@ export default class GrabberLogic {
 		}
 
 		let lastWeek = [];
-		let thisWeek = [];
 		let scheduledDone = [];
 		let plannedDone = [];
 		let unplannedDone = [];
-		let overdoScheduled = [];
-		let overdoPlanned = [];
-		let overdoUnplanned = [];
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
 			.then((tasks) => _.filter(tasks, t => t.completedMoment.clone().isAfter(lastWeekStart)))
 			.tap((tasks) => lastWeek = _.filter(tasks, t => t.completedMoment.clone().isBetween(lastWeekStart, lastWeekEnd)))
-			.tap((tasks) => thisWeek = _.filter(tasks, t => t.completedMoment.clone().isAfter(lastWeekEnd)))
 			.tap((tasks) => scheduledDone = _.filter(lastWeek, t => t.myType === 'scheduled'))
 			.tap((tasks) => plannedDone = _.filter(lastWeek, t => t.myType === 'planned'))
 			.tap((tasks) => unplannedDone = _.filter(lastWeek, t => t.myType === 'unplanned'))
-			.tap((tasks) => overdoScheduled = _.filter(thisWeek, t => t.myType === 'scheduled'))
-			.tap((tasks) => overdoPlanned = _.filter(thisWeek, t => t.myType === 'planned'))
-			.tap((tasks) => overdoUnplanned = _.filter(thisWeek, t => t.myType === 'unplanned'))
 			// for debug only
 			.then((tasks) => _.map(tasks, formatTask))
 			.tap(argv.debugPrint ? console.log : () => {
@@ -117,18 +102,11 @@ export default class GrabberLogic {
 				console.log(`Scheduled done: ${scheduledDone.length}`);
 				console.log(`Planned done ${plannedDone.length}`);
 				console.log(`Unplanned done ${unplannedDone.length}`);
-				console.log(`Overdo scheduled ${overdoScheduled.length}`);
-				console.log(`Overdo planned ${overdoPlanned.length}`);
-				console.log(`Overdo unplanned ${overdoUnplanned.length}`);
 				console.log('Incomplete - see next');
 				console.log('For copying:');
 				console.log(scheduledDone.length);
 				console.log(plannedDone.length);
 				console.log(unplannedDone.length);
-				console.log(overdoScheduled.length);
-				console.log(overdoPlanned.length);
-				console.log(overdoUnplanned.length);
-
 			});
 	}
 
