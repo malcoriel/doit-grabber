@@ -41,8 +41,8 @@ export default class GrabberLogic {
 	}
 
 	static printCompletedByProjectStats(lib, argv, tasks) {
-		let lastWeekStart = GrabberLogic.getLastWeekStart();
-		let lastWeekEnd = GrabberLogic.getLastWeekEnd();
+		let lastWeekStart = GrabberLogic.getLastWeekStart(argv);
+		let lastWeekEnd = GrabberLogic.getLastWeekEnd(argv);
 
 		console.log(`Seaching completed by project between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`);
 
@@ -58,20 +58,22 @@ export default class GrabberLogic {
 			});
 	}
 
-	static getLastWeekStart(){
+	static getLastWeekStart(argv){
+		if(argv.start)
+			return moment.utc(argv.start);
 		const proposedStart = moment.utc().startOf('week').subtract(1, 'day').utcOffset(5);
 		if(proposedStart.diff(moment.utc(), 'days') <= 3) // most likely late statistics gathering
 			proposedStart.subtract(1, 'week');
 		return proposedStart;
 	}
 
-	static getLastWeekEnd(){
-		return GrabberLogic.getLastWeekStart().clone().add(1, 'week').utcOffset(5);
+	static getLastWeekEnd(argv){
+		return GrabberLogic.getLastWeekStart(argv).clone().add(1, 'week').utcOffset(5);
 	}
 
 	static printCompletedStats(lib, argv, tasks) {
-		let lastWeekStart = GrabberLogic.getLastWeekStart();
-		let lastWeekEnd = GrabberLogic.getLastWeekEnd();
+		let lastWeekStart = GrabberLogic.getLastWeekStart(argv);
+		let lastWeekEnd = GrabberLogic.getLastWeekEnd(argv);
 
 		console.log(`Seaching completed between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`)
 
