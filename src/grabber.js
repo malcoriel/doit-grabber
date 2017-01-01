@@ -4,6 +4,7 @@ import prompt from 'prompt';
 prompt.message = '';
 prompt.delimiter = '';
 import Q from 'q';
+//noinspection JSUnresolvedVariable
 import {argv} from 'yargs';
 import GrabberLogic from './logic';
 function main() {
@@ -11,6 +12,7 @@ function main() {
 		.then(() => {
 			if (argv.login && argv.password)
 				return { login: argv.login, password: argv.password };
+			//noinspection JSUnresolvedFunction
 			return Q.fcall(prompt.start)
 				.then(function askForCredentials() {
 					const loginSchema = {
@@ -26,6 +28,7 @@ function main() {
 							},
 						},
 					};
+					//noinspection JSUnresolvedFunction
 					return Q.nbind(prompt.get, prompt)(loginSchema);
 				});
 		})
