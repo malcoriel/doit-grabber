@@ -1,5 +1,7 @@
+//noinspection JSUnresolvedVariable
 const agent = require('superagent-promise')(require('superagent'), Q.Promise);
 import Q from 'q';
+//noinspection JSUnresolvedVariable
 import _ from 'lodash';
 
 export default class DoItLib {
@@ -22,15 +24,18 @@ export default class DoItLib {
 	}
 
 	getResources() {
+		//noinspection JSUnresolvedVariable
 		return this.plainGet('https://i.doit.im/api/resources_init').then(res => res.resources);
 	}
 
 	getProjects() {
+		//noinspection JSUnresolvedVariable
 		return this.getResources()
 			.then((resources) => _(resources.projects).map(p => [p.uuid, p.name]).fromPairs().value());
 	}
 
 	getBoxes() {
+		//noinspection JSUnresolvedVariable
 		return this.getResources()
 			.then((resources) => _.map(resources.boxes, box => box.type))
 	}
@@ -53,6 +58,7 @@ export default class DoItLib {
 	}
 
 	getAllTasks(dropTrash = true) {
+		//noinspection JSUnresolvedFunction
 		return Q()
 			.then(() => this.getBoxes())
 			.then((boxes) => Q.all(_.map(boxes, box => this.tryGetTaskList(box))))
@@ -60,9 +66,9 @@ export default class DoItLib {
 			.then(boxesTasks => _.filter(boxesTasks, t => {
 				if(!dropTrash)
 					return true;
-				if(t.trashed || t.deleted)
-					return false;
-				return true;
+				//noinspection JSUnresolvedVariable
+				return !(t.trashed || t.deleted);
+
 			}))
 	}
 }
