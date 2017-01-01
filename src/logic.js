@@ -1,7 +1,8 @@
 import Q from 'q';
-import _ from 'lodash';
+const _ = require('lodash');
 import moment from 'moment';
 import naturalSort from 'javascript-natural-sort';
+const fs = require('fs');
 
 export default class GrabberLogic {
 	static doBackup(lib, argv) {
@@ -11,6 +12,7 @@ export default class GrabberLogic {
 			})
 			.then((tasks) => {
 				if (argv.output) {
+					//noinspection JSUnresolvedFunction
 					return Q.fcall(fs.writeFile, argv.output, JSON.stringify(tasks, null, 4));
 				}
 				console.log(tasks);
@@ -20,19 +22,20 @@ export default class GrabberLogic {
 	static getStats(lib, argv) {
 		return Q()
 			.then(() => lib.getAllTasks())
-			.then((tasks) => GrabberLogic.beautifyTasks(lib, argv, tasks))
+			.then((tasks) => GrabberLogic.beautifyTasks(lib, tasks))
 			.tap((tasks) => {
 				const crunchTasks = _.filter(tasks, t => t.project === 'Crunch');
 				return console.log(`Will omit ${crunchTasks.length} Crunch tasks`);
 			})
 			.then((tasks) => _.reject(tasks, t => t.project === 'Crunch'))
 			.tap(() => console.log('-----------DONE---------------'))
-			.tap((tasks) => GrabberLogic.printCompletedStats(lib, argv, tasks))
+			.tap((tasks) => GrabberLogic.printCompletedStats(argv, tasks))
 			.tap((tasks) => GrabberLogic.printIncompleteStats(lib, argv, tasks))
 			.tap(() => console.log('------DONE BY PROJECT---------'))
-			.tap((tasks) => GrabberLogic.printCompletedByProjectStats(lib, argv, tasks))
+			.tap((tasks) => GrabberLogic.printCompletedByProjectStats(argv, tasks))
 	}
 
+	//noinspection JSUnusedLocalSymbols
 	static printIncompleteStats(lib, argv, tasks) {
 		return Q()
 			.then(() => _.reject(tasks, 'completed'))
@@ -40,11 +43,11 @@ export default class GrabberLogic {
 			.tap(incompletePlanned => console.log(incompletePlanned.length));
 	}
 
-	static printCompletedByProjectStats(lib, argv, tasks) {
+	static printCompletedByProjectStats(argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart(argv);
 		let lastWeekEnd = GrabberLogic.getLastWeekEnd(argv);
 
-		console.log(`Seaching completed by project between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`);
+		console.log(`Searching completed by project between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`);
 
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
@@ -71,11 +74,11 @@ export default class GrabberLogic {
 		return GrabberLogic.getLastWeekStart(argv).clone().add(1, 'week').utcOffset(5);
 	}
 
-	static printCompletedStats(lib, argv, tasks) {
+	static printCompletedStats(argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart(argv);
 		let lastWeekEnd = GrabberLogic.getLastWeekEnd(argv);
 
-		console.log(`Seaching completed between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`)
+		console.log(`Searching completed between ${lastWeekStart.format()} and ${lastWeekEnd.format()}`);
 
 		function formatTask(t) {
 			return {
@@ -88,6 +91,7 @@ export default class GrabberLogic {
 		let scheduledDone = [];
 		let plannedDone = [];
 		let unplannedDone = [];
+		//noinspection JSUnresolvedVariable
 		return Q()
 			.then(() => _.filter(tasks, 'completed'))
 			.then((tasks) => _.filter(tasks, t => t.completedMoment.clone().isAfter(lastWeekStart)))
@@ -112,7 +116,7 @@ export default class GrabberLogic {
 			});
 	}
 
-	static beautifyTasks(lib, argv, tasks) {
+	static beautifyTasks(lib, tasks) {
 		/*
 		 {
 		 "repeat_no": "20161015",
@@ -158,7 +162,7 @@ export default class GrabberLogic {
 			.then((projects) => {
 				return _.map(tasks, task => {
 
-					const isCompleted = !!task.completed;
+					const isCompleted = task.completed;
 					const completedMoment = moment.utc(task.completed);
 					return ({
 						title: task.title,
@@ -178,7 +182,7 @@ export default class GrabberLogic {
 		switch (mode) {
 			case 'stats':
 				return GrabberLogic.getStats(doItLib, argv);
-			case 'backup': // intentinally pass through
+			case 'backup': // intentionally pass through
 			default:
 				return GrabberLogic.doBackup(doItLib, argv);
 		}
