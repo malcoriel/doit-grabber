@@ -28,11 +28,12 @@ export default class GrabberLogic {
 				return console.log(`Will omit ${crunchTasks.length} Crunch tasks`);
 			})
 			.then((tasks) => _.reject(tasks, t => t.project === 'Crunch'))
+			.tap(() => console.log('------DONE BY PROJECT---------'))
+			.tap((tasks) => GrabberLogic.printCompletedByProjectStats(lib, argv, tasks))
 			.tap(() => console.log('-----------DONE---------------'))
 			.tap((tasks) => GrabberLogic.printCompletedStats(argv, tasks))
 			.tap((tasks) => GrabberLogic.printIncompleteStats(lib, argv, tasks))
-			.tap(() => console.log('------DONE BY PROJECT---------'))
-			.tap((tasks) => GrabberLogic.printCompletedByProjectStats(argv, tasks))
+
 	}
 
 	//noinspection JSUnusedLocalSymbols
@@ -43,7 +44,7 @@ export default class GrabberLogic {
 			.tap(incompletePlanned => console.log(incompletePlanned.length));
 	}
 
-	static printCompletedByProjectStats(argv, tasks) {
+	static printCompletedByProjectStats(lib, argv, tasks) {
 		let lastWeekStart = GrabberLogic.getLastWeekStart(argv);
 		let lastWeekEnd = GrabberLogic.getLastWeekEnd(argv);
 
@@ -53,24 +54,42 @@ export default class GrabberLogic {
 			.then(() => _.filter(tasks, 'completed'))
 			.then((tasks) => _.filter(tasks, t => t.completedMoment.clone().isBetween(lastWeekStart, lastWeekEnd)))
 			.then((tasks) => _.groupBy(tasks, 'project'))
+			.then((groupedTasks) => {
+				return Q()
+					.then(() => lib.getProjects())
+					.then((projects) => {
+						const projectNames = _.values(projects);
+						_.each(projectNames, project => {
+							if(!groupedTasks[project])
+								groupedTasks[project] = [];
+						});
+						return groupedTasks;
+					});
+			})
 			.tap((groupedTasks) => {
-				let sortedProjects = _(groupedTasks).keys().sort(naturalSort).value();
-				_.each(sortedProjects, projectName => {
-					console.log(`${projectName ? projectName : 'Unknown'}: ${groupedTasks[projectName].length}`);
-				})
+				if (groupedTasks[undefined]) {
+					console.warn('there are tasks with undefined project, assign them first!');
+					console.log(_.map(groupedTasks[undefined], t => t.title));
+				}
+				else {
+					let sortedProjects = _(groupedTasks).keys().sort(naturalSort).value();
+					_.each(sortedProjects, projectName => {
+						console.log(`${projectName ? projectName : 'Unknown'}: ${groupedTasks[projectName].length}`);
+					})
+				}
 			});
 	}
 
-	static getLastWeekStart(argv){
-		if(argv.start)
+	static getLastWeekStart(argv) {
+		if (argv.start)
 			return moment.utc(argv.start);
 		const proposedStart = moment.utc().startOf('week').subtract(1, 'day').utcOffset(5);
-		if(proposedStart.diff(moment.utc(), 'days') <= 3) // most likely late statistics gathering
+		if (proposedStart.diff(moment.utc(), 'days') <= 3) // most likely late statistics gathering
 			proposedStart.subtract(1, 'week');
 		return proposedStart;
 	}
 
-	static getLastWeekEnd(argv){
+	static getLastWeekEnd(argv) {
 		return GrabberLogic.getLastWeekStart(argv).clone().add(1, 'week').utcOffset(5);
 	}
 
@@ -102,7 +121,7 @@ export default class GrabberLogic {
 			// for debug only
 			.then((tasks) => _.map(tasks, formatTask))
 			.tap(argv.debugPrint ? console.log : () => {
-			})
+				})
 			// then result is ignored, uses side-effected vars above
 			.then(() => {
 				console.log(`Scheduled done: ${scheduledDone.length}`);
