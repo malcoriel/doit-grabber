@@ -189,7 +189,7 @@ export default class GrabberLogic {
 						completedAt: isCompleted ? completedMoment.format() : null,
 						completedMoment: isCompleted ? completedMoment : null,
 						priority: ['none', 'low', 'medium', 'high'][task.priority],
-						myType: ['unplanned', 'planned', 'scheduled', 'unused'][task.priority],
+						myType: ['unplanned', 'planned', 'scheduled', 'scheduled'][task.priority],
 						project: projects[task.project]
 					});
 				});
