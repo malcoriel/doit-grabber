@@ -90,6 +90,8 @@ export default class GrabberLogic {
 	}
 
 	static getLastWeekEnd(argv) {
+		if (argv.end)
+			return moment.utc(argv.end);
 		return GrabberLogic.getLastWeekStart(argv).clone().add(1, 'week').utcOffset(5);
 	}
 
