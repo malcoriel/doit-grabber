@@ -39,7 +39,7 @@ export default class GrabberLogic {
 	//noinspection JSUnusedLocalSymbols
 	static printIncompleteStats(lib, argv, tasks) {
 		return Q()
-			.then(() => _.reject(tasks, 'completed'))
+			.then(() => _.reject(tasks, 'completed')) // there's a bug here. It pass completed which were completed after week end
 			.then((tasks) => _.filter(tasks, t => t.myType === 'planned'))
 			.tap(incompletePlanned => console.log(incompletePlanned.length));
 	}
