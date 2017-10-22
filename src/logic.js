@@ -181,10 +181,11 @@ export default class GrabberLogic {
 		return Q()
 			.then(() => lib.getProjects())
 			.then((projects) => {
-				return _.map(tasks, task => {
-
+				const tasksWithUndefineds = _.map(tasks, task => {
 					const isCompleted = task.completed;
 					const completedMoment = moment.utc(task.completed);
+					if(task.type === 'project')
+						return undefined;
 					return ({
 						title: task.title,
 						completed: isCompleted,
@@ -195,6 +196,7 @@ export default class GrabberLogic {
 						project: projects[task.project]
 					});
 				});
+				return _.filter(tasksWithUndefineds)
 			})
 	}
 
