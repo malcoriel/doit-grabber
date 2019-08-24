@@ -2,7 +2,7 @@ import Q from 'q';
 const _ = require('lodash');
 import moment from 'moment';
 import naturalSort from 'javascript-natural-sort';
-const fs = require('fs');
+const fs = require('fs-extra');
 
 export default class GrabberLogic {
 	static doBackup(lib, argv) {
@@ -13,7 +13,7 @@ export default class GrabberLogic {
 			.then((tasks) => {
 				if (argv.output) {
 					//noinspection JSUnresolvedFunction
-					return Q.fcall(fs.writeFile, argv.output, JSON.stringify(tasks, null, 4));
+					return fs.writeFile(argv.output, JSON.stringify(tasks, null, 4));
 				}
 				console.log(tasks);
 			});
