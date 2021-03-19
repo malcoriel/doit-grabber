@@ -29,6 +29,11 @@ export default class GrabberLogic {
 			if (task.start_at) {
 				const dt = moment(task.start_at)
 				recordDate = task.all_day ? dt.format('YYYY-MM-DD') : moment(dt).format('YYYY-MM-DD hh:mm:ss')
+				if (task.repeater) {
+					if (task.repeater.mode == 'daily') recordDate += ' every day'
+					if (task.repeater.mode == 'monthly') recordDate += ' every month'
+					if (task.repeater.mode == 'yearly') recordDate += ' every year'
+				}
 			}
 			records.push({
 				// See https://todoist.com/help/articles/how-to-format-your-csv-file-so-you-can-import-it-into-todoist for format
