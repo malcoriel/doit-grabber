@@ -10,3 +10,8 @@ npm start
 ```
 npm start -- --login=<your login> --password=<your password> --output=<path to output file>
 ```
+## Export tasks as Todoist project
+```
+npm start -- --login=<your login> --password=<your password> --output=<path to output file> --format=todoist
+```
+https://todoist.com/help/articles/importing-or-exporting-project-templates

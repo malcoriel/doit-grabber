@@ -12,11 +12,64 @@ export default class GrabberLogic {
 			})
 			.then((tasks) => {
 				if (argv.output) {
-					//noinspection JSUnresolvedFunction
-					return fs.writeFile(argv.output, JSON.stringify(tasks, null, 4));
+					if (argv.format == 'todoist') {
+						return this.writeTodoistCSV(argv.output, tasks);
+					} else {
+						return this.writeJSON(argv.output, tasks);
+					}
 				}
 				console.log(tasks);
 			});
+	}
+
+	static writeTodoistCSV(filepath, tasks) {
+		let records = [];
+		for (let task of tasks) {
+			let recordDate;
+			if (task.start_at) {
+				const dt = moment(task.start_at)
+				recordDate = task.all_day ? dt.format('YYYY-MM-DD') : moment(dt).format('YYYY-MM-DD hh:mm:ss')
+			}
+			records.push({
+				// See https://todoist.com/help/articles/how-to-format-your-csv-file-so-you-can-import-it-into-todoist for format
+				type: 'task',
+				content: task.title,
+				priority: 4 - task.priority,
+				indent: 1,
+				date: recordDate,
+				date_lang: 'en'
+			})
+			if (task.notes) {
+				records.push({
+					type: 'note',
+					content: task.notes,
+				})
+			}
+			records.push({})
+		}
+
+		const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+		const csvWriter = createCsvWriter({
+				path: filepath,
+				header: [
+						{id: 'type', title: 'TYPE'},
+						{id: 'content', title: 'CONTENT'},
+						{id: 'priority', title: 'PRIORITY'},
+						{id: 'indent', title: 'INDENT'},
+						{id: 'author', title: 'AUTHOR'},
+						{id: 'responsible', title: 'RESPONSIBLE'},
+						{id: 'date', title: 'DATE'},
+						{id: 'date_lang', title: 'DATE_LANG'},
+						{id: 'timezone', title: 'TIMEZONE'}
+				]
+		});
+		 
+		return csvWriter.writeRecords(records)
+	}
+
+	static writeJSON(filepath, tasks) {
+		//noinspection JSUnresolvedFunction
+		return fs.writeFile(filepath, JSON.stringify(tasks, null, 4));
 	}
 
 	static getStats(lib, argv) {
